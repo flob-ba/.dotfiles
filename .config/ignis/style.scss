@@ -8,9 +8,7 @@
   color: #f8f8b7;
   font-weight: bold;
   font-size: 1.1rem;
-  margin: 0rem 10px;
   padding: 0.3rem 1rem;
-  border-radius: 0px 0px 10px 10px; 
 }
 
 .workspaces {
@@ -23,11 +21,11 @@
   margin: 0 0.2rem;
   border-radius: 0.5rem;
   &.occupied {
-    background-color: #d79921;
-    color: #040404;
+    background-color: #fabe2f;
+    color: #0a1419;
   }
   &.active {
-    background-color: #d65d0e;
+    background-color: #fe8019;
     color: #0a1419;
   }
   &.empty {
