@@ -21,7 +21,7 @@
     selected-urgent-foreground: @foreground;
 
     background-color: @background;
-    background: #101010;
+    background: #28282800;
     foreground: #f8f8b7;
     border-color: @background;
     spacing: 2;
@@ -29,7 +29,7 @@
 
 #window {
     background-color: @background;
-    border: 1;
+    border: 0;
     border-color: #f8f8b7;
     padding: 2.5ch;
 }
