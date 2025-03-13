@@ -62,6 +62,11 @@ vim.cmd("colorscheme gruvbox")
 vim.cmd("hi Normal guibg=#101010 guifg=#e6d0d0")
 vim.cmd("hi SignColumn guibg=#0101010 guifg=#e6d0d0")
 
+require("autoclose").setup({
+   keys = {
+      ["$"] = { escape = true, close = true, pair = "$$", disabled_filetypes = {} },
+   },
+})
 
 local lsp_zero = require("lsp-zero")
 lsp_zero.on_attach(function(client, bufnr)

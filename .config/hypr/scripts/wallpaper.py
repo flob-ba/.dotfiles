@@ -19,36 +19,34 @@ city = LocationInfo("Dresden", "Germany", "Europe/Berlin", latidute, longitude)
 
 current_wallpaper = None
 
-if now() < blue_hour(city.observer)[0]:
+if now(city.tzinfo) < blue_hour(city.observer, tzinfo=city.tzinfo)[0]:
     current_wallpaper = IMG_NIGHT
-elif now() < golden_hour(city.observer)[1]:
+elif now(city.tzinfo) < golden_hour(city.observer, tzinfo=city.tzinfo)[1]:
     current_wallpaper = IMG_MORNING
-elif now() < golden_hour(city.observer, direction=SunDirection.SETTING)[0]:
+elif now(city.tzinfo) < golden_hour(city.observer, direction=SunDirection.SETTING, tzinfo=city.tzinfo)[0]:
     current_wallpaper = IMG_NOON
-elif now() < blue_hour(city.observer, direction=SunDirection.SETTING)[1]:
+elif now(city.tzinfo) < blue_hour(city.observer, direction=SunDirection.SETTING, tzinfo=city.tzinfo)[1]:
     current_wallpaper = IMG_EVENING
 else:
     current_wallpaper = IMG_NIGHT
 
 subprocess.run(f"{WALLPAPER_CMD} {current_wallpaper}", shell=True)
-print(f"Set wallpaper to {current_wallpaper}")
 
 while True:
     next_wallpaper = None
-    if now() < blue_hour(city.observer)[0]:
+    if now(city.tzinfo) < blue_hour(city.observer, tzinfo=city.tzinfo)[0]:
         next_wallpaper = IMG_NIGHT
-    elif now() < golden_hour(city.observer)[1]:
+    elif now(city.tzinfo) < golden_hour(city.observer, tzinfo=city.tzinfo)[1]:
         next_wallpaper = IMG_MORNING
-    elif now() < golden_hour(city.observer, direction=SunDirection.SETTING)[0]:
+    elif now(city.tzinfo) < golden_hour(city.observer, direction=SunDirection.SETTING, tzinfo=city.tzinfo)[0]:
         next_wallpaper = IMG_NOON
-    elif now() < blue_hour(city.observer, direction=SunDirection.SETTING)[1]:
+    elif now(city.tzinfo) < blue_hour(city.observer, direction=SunDirection.SETTING, tzinfo=city.tzinfo)[1]:
         next_wallpaper = IMG_EVENING
     else:
-        next_wallpaper = IMG_NIGHT
-   
+        next_wallpaper = IMG_NIGHT 
+
     if next_wallpaper != current_wallpaper:
         current_wallpaper = next_wallpaper
         subprocess.run(f"{WALLPAPER_CMD} {current_wallpaper}", shell=True)
-        print(f"Set wallpaper to {curent_wallpaper}")
 
     time.sleep(1)
