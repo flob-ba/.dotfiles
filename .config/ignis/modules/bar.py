@@ -16,7 +16,7 @@ upower = UPowerService.get_default()
 app = IgnisApp.get_default()
 
 class WorkspaceButton(Widget.Box):
-    def __init__(self, index: int):
+    def __init__(self, index: int, workspaces, active):
         super().__init__(
             child = [
                 Widget.Label(
@@ -25,29 +25,26 @@ class WorkspaceButton(Widget.Box):
                 ),
             ],
         )
-        self.id = index
-        hypr.connect("notify::workspaces", lambda x,y: self.update_css())
 
-    def update_css(self):
-        if hypr.active_workspace["id"] == self.id:
+        if index == active.id:
             self.css_classes = ["workspace", "active"]
-            self.child[0].css_classes = ["workspace-label"]
         else:
             occupied = False
-            for workspace in hypr.get_workspaces():
-                if workspace["id"] == self.id:
+            for workspace in workspaces:
+                if workspace.id == index:
                     self.css_classes = ["workspace", "occupied"]
-                    self.child[0].css_classes = ["workspace-label"]
                     occupied = True
             if not occupied:
-                self.css_classes = ["workspace", "empty"] 
-                self.child[0].css_classes = ["workspace-label"]
+                self.css_classes = ["workspace", "empty"]
 
 class Workspaces(Widget.Box):
     def __init__(self):
         super().__init__(
             css_classes = ["workspaces"],
-            child = [WorkspaceButton(i) for i in range(1,11)]
+            child = hypr.bind_many(
+                ["workspaces", "active_workspace"],
+                transform = lambda workspaces,active: [WorkspaceButton(i, workspaces, active) for i in range(1,11)]
+            )
         )
 
 class Audio(Widget.Box):
