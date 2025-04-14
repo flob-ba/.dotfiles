@@ -19,14 +19,14 @@ vim.opt.rtp:prepend(lazypath)
 require("lazy").setup("config.plugins")
 --require("pywal").setup()
 local lualine_theme = require("lualine.themes.gruvbox")
-lualine_theme.normal.c.bg = "#101010"
-lualine_theme.normal.c.fg = "#e6d0d0"
-lualine_theme.insert.c.bg = "#101010"
-lualine_theme.insert.c.fg = "#e6d0d0"
-lualine_theme.visual.c.bg = "#101010"
-lualine_theme.visual.c.fg = "#e6d0d0"
-lualine_theme.command.c.bg = "#101010"
-lualine_theme.command.c.fg = "#e6d0d0"
+lualine_theme.normal.c.bg = "#1d2021"
+lualine_theme.normal.c.fg = "#ebdbb2"
+lualine_theme.insert.c.bg = "#1d2021"
+lualine_theme.insert.c.fg = "#ebdbb2"
+lualine_theme.visual.c.bg = "#1d2021"
+lualine_theme.visual.c.fg = "#ebdbb2"
+lualine_theme.command.c.bg = "#1d2021"
+lualine_theme.command.c.fg = "#ebdbb2"
 require("lualine").setup({
     options = {
         theme = lualine_theme,
@@ -59,8 +59,10 @@ require("gruvbox").setup({
   transparent_mode = false,
 })
 vim.cmd("colorscheme gruvbox")
-vim.cmd("hi Normal guibg=#101010 guifg=#e6d0d0")
-vim.cmd("hi SignColumn guibg=#0101010 guifg=#e6d0d0")
+vim.cmd("hi Normal guibg=#1d2021 guifg=#e6d0d0")
+vim.cmd("hi SignColumn guibg=#1d2021 guifg=#e6d0d0")
+
+require("gitsigns").setup()
 
 require("autoclose").setup({
    keys = {
