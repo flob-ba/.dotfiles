@@ -123,9 +123,16 @@ class Bar(Widget.Window):
             kb_mode = "none",
             child = Widget.CenterBox(
                 css_classes = ["statusbar"],
-                start_widget = Workspaces(),
-                center_widget = Clock(),
+                start_widget = Widget.Box(
+                    css_classes = ["bar-module"],
+                    child = [Workspaces()],
+                ),
+                center_widget = Widget.Box(
+                    css_classes = ["bar-module"],
+                    child = [Clock()],
+                ),
                 end_widget = Widget.Box(
+                    css_classes = ["bar-module"],
                     child = [
                         Audio(),
                         Network(),

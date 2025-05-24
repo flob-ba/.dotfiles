@@ -6,10 +6,10 @@ from astral import now
 import time
 import subprocess
 
-IMG_NIGHT = "~/.wallpaper/outset_night.jpg"
-IMG_MORNING = "~/.wallpaper/outset_morning.jpg"
-IMG_NOON = "~/.wallpaper/outset_day.jpg"
-IMG_EVENING = "~/.wallpaper/outset_evening.jpg"
+IMG_NIGHT = "~/.wallpaper/gruvbox_outset_night.jpg"
+IMG_MORNING = "~/.wallpaper/gruvbox_outset_morning.jpg"
+IMG_NOON = "~/.wallpaper/gruvbox_outset_day.jpg"
+IMG_EVENING = "~/.wallpaper/gruvbox_outset_evening.jpg"
 
 WALLPAPER_CMD = "swww img --transition-type wave --transition-duration 2 --transition-fps 60"
 

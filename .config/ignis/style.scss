@@ -4,11 +4,16 @@
 }
 
 .statusbar {
-  background-color: #1d2021;
   color: #f8f8b7;
   font-weight: bold;
   font-size: 1.1rem;
+}
+
+.bar-module {
+  background-color: #1d2021;
   padding: 0.3rem 1rem;
+  border-radius: 0 0 20px 20px;
+  margin: 0 10px;
 }
 
 .workspaces {
