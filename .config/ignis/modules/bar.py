@@ -68,11 +68,12 @@ class Audio(Widget.Box):
                 ),
             ],
         )
-class SystemTrayIcon(Widget.Icon):
+class SystemTrayIcon(Widget.Button):
     def __init__(self, item: SystemTrayItem):
+        self.item = item
         super().__init__(
-            image = item.bind("icon"),
-            pixel_size = 20,
+            child = Widget.Icon(image = item.bind("icon"),pixel_size = 20),
+            on_click = lambda self: self.item.activate()
         )
 
 class SystemTray(Widget.Box):
