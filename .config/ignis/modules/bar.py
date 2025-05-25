@@ -4,6 +4,8 @@ from ignis.services.hyprland import HyprlandService
 from ignis.services.network import NetworkService
 from ignis.services.upower import UPowerService
 from ignis.services.upower import UPowerDevice
+from ignis.services.system_tray import SystemTrayService
+from ignis.services.system_tray import SystemTrayItem
 from ignis.app import IgnisApp
 from ignis.utils import Utils
 from ignis.widgets import Widget
@@ -12,6 +14,7 @@ audio = AudioService.get_default()
 hypr = HyprlandService.get_default()
 network = NetworkService.get_default()
 upower = UPowerService.get_default()
+systemtray = SystemTrayService.get_default()
 
 app = IgnisApp.get_default()
 
@@ -64,6 +67,18 @@ class Audio(Widget.Box):
                     label = audio.speaker.bind_many(["volume", "is_muted"], lambda volume, is_muted: "0%" if volume is None else ("" if is_muted else f"{int(volume)}%")),
                 ),
             ],
+        )
+class SystemTrayIcon(Widget.Icon):
+    def __init__(self, item: SystemTrayItem):
+        super().__init__(
+            image = item.icon,
+            pixel_size = 20,
+        )
+
+class SystemTray(Widget.Box):
+    def __init__(self):
+        super().__init__(
+            child = systemtray.bind("items", lambda items: [SystemTrayIcon(item) if item.title != "blueman" else None for item in items])
         )
 
 class Clock(Widget.Label):
@@ -134,6 +149,7 @@ class Bar(Widget.Window):
                 end_widget = Widget.Box(
                     css_classes = ["bar-module"],
                     child = [
+                        SystemTray(),
                         Audio(),
                         Network(),
                         Battery(upower.batteries[0]),
