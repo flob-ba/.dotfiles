@@ -116,7 +116,7 @@ class Bar(Widget.Window):
     def __init__(self, monitor: int):
         super().__init__(
             anchor = ["left","top","right"],
-            exclusivity = "exclusive",
+            exclusivity = "ignore",
             monitor = monitor,
             namespace = f"bar-{monitor}",
             layer = "top",
