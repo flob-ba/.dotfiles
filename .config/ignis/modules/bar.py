@@ -71,7 +71,7 @@ class Audio(Widget.Box):
 class SystemTrayIcon(Widget.Icon):
     def __init__(self, item: SystemTrayItem):
         super().__init__(
-            image = item.icon,
+            image = item.bind("icon"),
             pixel_size = 20,
         )
 
