@@ -1,7 +1,5 @@
-from .bar import Bar
-from .logout import Logout
+from .statusbar import StatusBar
 
 __all__ = [
-    "Bar",
-    "Loguout",
+    "StatusBar",
 ]

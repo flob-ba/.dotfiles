@@ -1,62 +1,91 @@
 * {
-  all: unset;
-  font-family: JetBrainsMonoNL NFM;
+  all: unset
 }
 
+$bg: #1d2021;
+$bg0: #282828;
+$bg1: #3c3836;
+$bg2: #504945;
+$bg3: #665c54;
+$bg4: #7c6f64;
+
+$fg: #ebdbb2;
+$fg0: #fbf1c7;
+$fg1: #ebdbb2;
+$fg2: #d5c4a1;
+$fg3: #bdae93;
+$fg4: #a89984;
+
+$red: #cc241d;
+$red-alt: #fb4934;
+$green: #98971a;
+$green-alt: #b8bb26;
+$yellow: #d79921;
+$yellow-alt: #fabd2f;
+$blue: #458588;
+$blue-alt: #83a598;
+$purple: #b16286;
+$purple-alt: #d3869b;
+$aqua: #689d6a;
+$aqua-alt: #8ec07c;
+$orange: #d65d0e;
+$orange-alt: #fe8019;
+$gray: #928374;
+$gray-alt: #a89984;
+
 .statusbar {
-  background-color: #10101000;
-  color: #f8f8b7;
-  font-weight: bold;
+  font-family: JetBrainsMonoNL NFM;
   font-size: 1.1rem;
+  font-weight: bold;
   margin-left: 10px;
   margin-right: 10px;
 }
 
-.bar-module {
-  background-color: #1d2021;
-  padding: 0.3rem 1rem;
-  border-radius: 0 0 10px 10px;
+.statusbar-workspaces-overview {
+  background-color: $bg;
+  color: $fg;
+  padding: 0.5rem;
+  border-radius: 0 0 1rem 1rem;
 }
 
-.workspaces {
-  padding: 0.2rem 0;
-}
-
-.workspace {
-  min-width: 0.1rem;
-  min-height: 0.1rem;
+.statusbar-workspace {
+  padding: 0 0.3rem;
   margin: 0 0.2rem;
   border-radius: 0.5rem;
-  &.occupied {
-    background-color: #fabd2f;
-    color: #0a1419;
-  }
+  background-color: $bg;
   &.active {
-    background-color: #fe8019;
-    color: #0a1419;
+    background-color: $orange;
+    color: $bg;
   }
-  &.empty {
-    background-color: #0a141900;
-    color: #f8f8b7;
+  &.occupied {
+    background-color: $yellow;
+    color: $bg;
   }
 }
 
-.workspace-label {
-  padding: 0 0.4rem;
+.statusbar-clock {
+  background-color: $bg;
+  color: $fg;
+  padding: 0 1rem;
+  border-radius: 0 0 1rem 1rem;
 }
 
-.audio {
-  margin: 0 0.3rem;
+.statusbar-status-tray {
+  background-color: $bg;
+  color: $fg;
+  padding: 0 0.8rem;
+  border-radius: 0 0 1rem 1rem;
 }
 
-.audio-icon {
-  margin: 0 0.3rem;
+.statusbar-status-pill {
+  margin: 0 0.2rem;
 }
 
-.network-icon {
-  margin: 0 0.3rem;
+.statusbar-status-button {
+  padding: 0 0.2rem;
+  border-radius: 0.5rem;
+  &:hover {
+    background-color: $bg1;
+  }
 }
 
-.battery {
-  margin: 0 0.3rem;
-}
