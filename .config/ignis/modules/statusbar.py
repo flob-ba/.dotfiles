@@ -37,10 +37,7 @@ class WorkspacesOverview(Widget.Box):
     def __init__(self):
         super().__init__()
         self.css_classes = ["statusbar-workspaces-overview"]
-        self.child = hypr.bind_many(
-            ["workspaces","active_workspace"],
-            lambda w,a: [Workspace(i) for i in range(1,11)]
-        )
+        self.child = [Workspace(i) for i in range(1,11)]
 
 class Clock(Widget.Label):
     def __init__(self):
@@ -59,7 +56,7 @@ class SystemTrayItem(Widget.Button):
 class SystemTray(Widget.Box):
     def __init__(self):
         super().__init__()
-        self.child = systray.bind("items", lambda items : [SystemTrayItem(item) for item in items])
+        self.child = systray.bind("items", lambda items : [SystemTrayItem(item) if item.title != "blueman" else None for item in items])
 
 class Audio(Widget.Box):
     def __init__(self):
