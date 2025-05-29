@@ -89,3 +89,30 @@ $gray-alt: #a89984;
   }
 }
 
+.notification-popup-list {
+  margin: 10px;
+}
+
+.notification-popup {
+  border: 2px solid $fg;
+  border-radius: 1rem;
+  background-color: $bg;
+  color: $fg;
+  margin: 0 0 0.5rem 0;
+  padding: 0.5rem;
+}
+
+.notification-popup-content {
+  font-family: Fira Sans;
+  &.summary {
+    font-size: 1.3rem;
+    font-weight: bold;
+    margin-left: 1rem;
+    margin-right: 1rem;
+  }
+  &.body {
+    font-size: 1.1rem;
+    margin-left: 1rem;
+    margin-right: 1rem;
+  }
+}
