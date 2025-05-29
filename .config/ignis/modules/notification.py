@@ -15,7 +15,7 @@ class NotificationPopup(Widget.CenterBox):
             vertical = True,
             child = [
                 Widget.Label(
-                    label = notification.summary,
+                    label = notification.summary[:50] + "..." if len(notification.summary) > 50 else notification.summary,
                     css_classes = ["notification-popup-content", "summary"]
                 ) if len(notification.summary) > 0 else None,
                 Widget.Label(
