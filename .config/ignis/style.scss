@@ -37,15 +37,27 @@ $gray-alt: #a89984;
   font-family: JetBrainsMonoNL NFM;
   font-size: 1.1rem;
   font-weight: bold;
+  margin-top: 5px;
   margin-left: 10px;
   margin-right: 10px;
 }
 
-.statusbar-workspaces-overview {
+.statusbar-module {
   background-color: $bg;
   color: $fg;
-  padding: 0.5rem 1rem;
-  border-radius: 0 0 1rem 1rem;
+  padding: 0.5rem 0.8rem;
+  border-radius: 1rem; 
+  $submodule-margin: 0.5rem;
+  &.left{
+    margin-right: $submodule-margin;
+  }
+  &.center{
+    margin-left: $submodule-margin/2;
+    margin-right: $submodule-margin/2;
+  }
+  &.right{
+    margin-left: $submodule-margin;
+  }
 }
 
 .statusbar-workspace {
@@ -70,22 +82,13 @@ $gray-alt: #a89984;
   border-radius: 0 0 1rem 1rem;
 }
 
-.statusbar-status-tray {
-  background-color: $bg;
-  color: $fg;
-  padding: 0 1rem;
-  border-radius: 0 0 1rem 1rem;
-}
-
-.statusbar-status-pill {
-  margin: 0 0.2rem;
-}
-
-.statusbar-status-button {
-  padding: 0 0.2rem;
-  border-radius: 0.5rem;
-  &:hover {
-    background-color: $bg1;
+.statusbar-status-icon {
+  padding: 0 0.3rem;
+  &.button {
+    border-radius: 0.5rem;
+    &:hover {
+      background-color: $bg1;
+    }
   }
 }
 

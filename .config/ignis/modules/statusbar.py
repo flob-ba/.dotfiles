@@ -33,27 +33,25 @@ class Workspace(Widget.Label):
                     return ["statusbar-workspace", "occupied"]
             return ["statusbar-workspace"]
 
-class WorkspacesOverview(Widget.Box):
+class WorkspaceModule(Widget.Box):
     def __init__(self):
         super().__init__()
-        self.css_classes = ["statusbar-workspaces-overview"]
         self.child = [Workspace(i) for i in range(1,11)]
 
-class Clock(Widget.Label):
+class ClockModule(Widget.Label):
     def __init__(self):
         super().__init__()
-        self.css_classes = ["statusbar-clock"]
         Utils.Poll(1000, lambda _: self.set_label(datetime.now().strftime("%H:%M")))
 
 class SystemTrayItem(Widget.Button):
     def __init__(self, item: SystemTrayItem):
         super().__init__()
         self.item = item
-        self.css_classes = ["statusbar-status-button"]
+        self.css_classes = ["statusbar-status-icon", "button"]
         self.child = Widget.Icon(image=item.bind("icon"), pixel_size=20)
         self.on_click = lambda self: self.item.activate()
 
-class SystemTray(Widget.Box):
+class SystemTrayModule(Widget.Box):
     def __init__(self):
         super().__init__()
         self.child = systray.bind("items", lambda items : [SystemTrayItem(item) if item.title != "blueman" else None for item in items])
@@ -63,10 +61,10 @@ class Audio(Widget.Box):
         super().__init__()
         self.child = [
             Widget.Icon(
-                css_classes = ["statusbar-status-pill"],
+                css_classes = ["statusbar-status-icon"],
                 icon_name = audio.speaker.bind("icon_name")),
             Widget.Icon(
-                css_classes = ["statusbar-status-pill"],
+                css_classes = ["statusbar-status-icon"],
                 icon_name = audio.microphone.bind("icon_name")
             ),
         ]
@@ -74,7 +72,7 @@ class Audio(Widget.Box):
 class Network(Widget.Icon):
     def __init__(self):
         super().__init__()
-        self.css_classes = ["statusbar-status-pill"]
+        self.css_classes = ["statusbar-status-icon"]
         Utils.Poll(1000, lambda _: self.update_icon())
 
     def update_icon(self):
@@ -86,15 +84,13 @@ class Network(Widget.Icon):
 class Battery(Widget.Icon):
     def __init__(self):
         super().__init__()
-        self.css_classes = ["statusbar-status-pill"]
+        self.css_classes = ["statusbar-status-icon"]
         self.icon_name = upower.batteries[0].bind("icon_name")
 
-class StatusTray(Widget.Box):
+class StatusModule(Widget.Box):
     def __init__(self):
         super().__init__()
-        self.css_classes = ["statusbar-status-tray"]
         self.child = [
-            SystemTray(),
             Audio(),
             Network(),
             Battery(), 
@@ -108,8 +104,19 @@ class StatusBar(Widget.Window):
         self.monitor = monitor_id
         self.child = Widget.CenterBox(
             css_classes = ["statusbar"],
-            start_widget = WorkspacesOverview(),
-            center_widget = Clock(),
-            end_widget = StatusTray(),
+            start_widget = Widget.Box(child = [
+                WorkspaceModule(),
+            ]),
+            end_widget = Widget.Box(child = [
+                SystemTrayModule(),
+                StatusModule(),
+                ClockModule(),
+            ]),
         )
+        for module in self.child.start_widget.child:
+            module.add_css_class("statusbar-module")
+            module.add_css_class("left")
+        for module in self.child.end_widget.child:
+            module.add_css_class("statusbar-module")
+            module.add_css_class("right")
 
