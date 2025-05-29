@@ -1,7 +1,10 @@
-from .statusbar import StatusBar
+from .statusbar import StatusBarLeft, StatusBarRight
 from .notification import NotificationPopupList
+from .control_center import ControlCenter
 
 __all__ = [
-    "StatusBar",
+    "StatusBarLeft",
+    "StatusBarRight",
     "NotificationPopupList",
+    "ControlCenter",
 ]

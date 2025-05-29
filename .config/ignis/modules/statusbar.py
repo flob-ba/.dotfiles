@@ -1,5 +1,6 @@
 from ignis.widgets import Widget
 from ignis.services.audio import AudioService
+from ignis.services.bluetooth import BluetoothService
 from ignis.services.hyprland import HyprlandService
 from ignis.services.network import NetworkService
 from ignis.services.system_tray import SystemTrayService, SystemTrayItem
@@ -9,6 +10,7 @@ from ignis.utils import Utils
 from datetime import datetime
 
 audio = AudioService.get_default()
+bluetooth = BluetoothService.get_default()
 hypr = HyprlandService.get_default()
 network = NetworkService.get_default()
 systray = SystemTrayService.get_default()
@@ -81,42 +83,61 @@ class Network(Widget.Icon):
         else:
             self.icon_name = network.wifi.icon_name
 
+class Bluetooth(Widget.Icon):
+    def __init__(self):
+        super().__init__()
+        self.css_classes = ["statusbar-status-icon"]
+        self.icon_name = "bluetooth-active-symbolic"
+
 class Battery(Widget.Icon):
     def __init__(self):
         super().__init__()
         self.css_classes = ["statusbar-status-icon"]
         self.icon_name = upower.batteries[0].bind("icon_name")
+        self.pixel_size = 18
 
 class StatusModule(Widget.Box):
     def __init__(self):
         super().__init__()
-        self.child = [
+        self.child = bluetooth.bind("powered", lambda powered: [
             Audio(),
+            Bluetooth() if powered else None,
             Network(),
             Battery(), 
-        ] 
+        ]) 
 
-class StatusBar(Widget.Window):
+class StatusBarLeft(Widget.Window):
     def __init__(self, monitor_id: int):
-        super().__init__(f"statusbar_{monitor_id}")
-        self.anchor = ["left", "right", "top"]
+        super().__init__(f"statusbar_left_{monitor_id}")
+        self.anchor = ["left", "top"]
         self.exclusivity = "exclusive"
         self.monitor = monitor_id
-        self.child = Widget.CenterBox(
+        self.layer = "top"
+        self.child = Widget.Box(
             css_classes = ["statusbar"],
-            start_widget = Widget.Box(child = [
+            child = [
                 WorkspaceModule(),
-            ]),
-            end_widget = Widget.Box(child = [
+            ],
+        )
+        for module in self.child.child:
+            module.add_css_class("statusbar-module")
+            module.add_css_class("left")
+
+class StatusBarRight(Widget.Window):
+    def __init__(self, monitor_id: int):
+        super().__init__(f"statusbar_right_{monitor_id}")
+        self.anchor = ["right", "top"]
+        self.exclusivity = "exclusive"
+        self.monitor = monitor_id
+        self.layer = "top"
+        self.child = Widget.Box(
+            css_classes = ["statusbar"],
+            child = [
                 SystemTrayModule(),
                 StatusModule(),
                 ClockModule(),
-            ]),
+            ],
         )
-        for module in self.child.start_widget.child:
-            module.add_css_class("statusbar-module")
-            module.add_css_class("left")
-        for module in self.child.end_widget.child:
+        for module in self.child.child:
             module.add_css_class("statusbar-module")
             module.add_css_class("right")
-
