@@ -1,15 +1,18 @@
 import asyncio
+import time
 from ignis.widgets import Widget
 from ignis.utils import Utils
 from ignis.services.bluetooth import BluetoothService
 from ignis.services.fetch import FetchService
-from ignis.services.network import NetworkService, WifiAccessPoint
+from ignis.services.network import NetworkService, WifiAccessPoint, WifiDevice
+from ignis.services.notifications import NotificationService
 from ignis.services.upower import UPowerService
 from datetime import datetime
 
 bluetooth = BluetoothService.get_default()
 fetch = FetchService.get_default()
 network = NetworkService.get_default()
+notify = NotificationService.get_default()
 upower = UPowerService.get_default()
 
 class StatusLine(Widget.CenterBox):
@@ -32,142 +35,242 @@ class StatusLine(Widget.CenterBox):
 
         Utils.Poll(1000, lambda _: self.center_widget.set_label(datetime.now().strftime("%Y-%m-%d - %H:%M")))
 
-class Wifi(Widget.Box):
+class AudioModule(Widget.CenterBox):
     def __init__(self):
         super().__init__()
-        title = Widget.Label(
-            label = "Wi-Fi",
-            css_classes = ["control-center-quick-settings-button-title"],
-        )
-        device = Widget.Label(
-            label=network.wifi.bind(
-                "is_connected",
-                lambda is_connected: network.wifi.devices[0].ap.ssid if is_connected else "Disconnected",
-            ),
-            css_classes = ["control-center-quick-settings-button-subtitle"],
-        )
-        button_connection = Widget.Button(
-            hexpand = True,
-            css_classes = network.wifi.bind(
-                "enabled",
-                lambda enabled: ["control-center-quick-settings-button", "connected", "left"] if enabled else ["control-center-quick-settings-button", "left"]),
-            child = Widget.Box(
-                child = [
-                    Widget.Icon(
-                        icon_name = "network-wireless-signal-excellent-symbolic",
-                        pixel_size = 30,
-                        style = "margin-right:0.5rem; margin-left:0.5rem;",
-                    ),
-                    Widget.Box(
-                        hexpand = True,
-                        vertical = True,
-                        child = [title, device],
-                    ),
-                ],
-            ),
-            on_click = lambda _: self.on_connection_click(),
-        )
-        button_details = Widget.Button(
-            css_classes = network.wifi.bind(
-                "enabled",
-                lambda enabled: ["control-center-quick-settings-button", "connected", "right"] if enabled else ["control-center-quick-settings-button", "right"]),
-            child = Widget.Icon(
-                icon_name = "pan-end-symbolic",
-                pixel_size = 30,
-            ),
-        )
+        self.css_classes = ["control-center-module", "control-center-audio-module"]
+        self.center_widget = Widget.Icon(icon_name="audio-volume-high-symbolic", pixel_size=50)
 
-        self.style="margin:0.5rem;"
-        self.child = [
-            button_connection, button_details,
-        ]
-
-    def on_connection_click(self):
-        if network.wifi.enabled:
-            asyncio.create_task(Utils.exec_sh_async("nmcli radio wifi off"))
-        else:
-            asyncio.create_task(Utils.exec_sh_async("nmcli radio wifi on"))
-
-class Bluetooth(Widget.Box):
-    def __init__(self):
+class QSButton(Widget.Button):
+    def __init__(self, control_module: "ControlModule", menu: str):
         super().__init__()
-        title = Widget.Label(
-            label = "Bluetooth",
-            css_classes = ["control-center-quick-settings-button-title"],
-        )
-        device = Widget.Label(
-            label = bluetooth.bind("connected_devices", lambda devices: devices[0].alias if len(devices) > 0 else "Disonnected"),
-            css_classes = ["control-center-quick-settings-button-subtitle"],
-        )
-        button_connection = Widget.Button(
-            hexpand = True,
-            css_classes = bluetooth.bind( 
-                "powered",
-                lambda powered: ["control-center-quick-settings-button", "connected", "left"] if powered else ["control-center-quick-settings-button", "left"]),
-            child = Widget.Box(
-                child = [
-                    Widget.Icon(
-                        icon_name = "bluetooth-active-symbolic",
-                        pixel_size = 30,
-                        style = "margin-right:0.5rem; margin-left:0.5rem;",
-                    ),
-                    Widget.Box(
-                        vertical = True,
-                        hexpand = True,
-                        child = [title, device],
-                    ),
-                ],
-            ),
-            on_click = lambda _: self.on_connection_click(),
-        )
-        button_details = Widget.Button(
-            css_classes = bluetooth.bind( 
-                "powered",
-                lambda powered: ["control-center-quick-settings-button", "connected", "right"] if powered else ["control-center-quick-settings-button", "right"]),
-            child = Widget.Icon(
-                icon_name = "pan-end-symbolic",
-                pixel_size = 30,
-            ),
+        self.control_module = control_module
+        self.menu = menu
+        self.css_classes = ["control-center-qs-button"]
+
+    def on_click(self, _):
+        self.control_module.open_menu(self.menu)
+
+class QSButtonNotify(QSButton):
+    def __init__(self, control_module: "ControlModule"):
+        super().__init__(control_module, "notify")
+        self.child = Widget.CenterBox(
+            start_widget = Widget.Icon(icon_name = "notification-symbolic", pixel_size=20),
+            center_widget = notify.bind(
+                "notifications",
+                lambda notifications:
+                Widget.Label(label = self.construct_label(notifications))
+            ), 
+            end_widget = Widget.Icon(icon_name = "pan-end-symbolic"),
         )
     
-        self.style="margin:0.5rem;"
-        self.child = [
-            button_connection, button_details,
-        ]
-
-    def on_connection_click(self):
-        if bluetooth.powered:
-            asyncio.create_task(Utils.exec_sh_async("bluetoothctl power off"))
+    def construct_label(self, notifications):
+        if len(notifications) == 0:
+            return "No Notifications"
+        elif len(notifications) == 1:
+            return "1 Notification"
         else:
-            asyncio.create_task(Utils.exec_sh_async("bluetoothctl power on"))
+            return f"{len(notifications)} Notifications"
 
-class MenuViewEmpty(Widget.Revealer):
+class QSButtonWifi(QSButton):
+    def __init__(self, control_module: "ControlModule"):
+        super().__init__(control_module, "wifi")
+        self.button_label = Widget.Label(label = "wifi")
+        self.child = Widget.CenterBox(
+            start_widget = Widget.Icon(icon_name = "network-wireless-signal-excellent-symbolic", pixel_size=20),
+            center_widget = network.wifi.devices[0].bind_many(
+                ["is_connected", "ap"],
+                lambda is_connected, ap:
+                Widget.Label(label = self.construct_label(is_connected, ap))
+            ),
+            end_widget = Widget.Icon(icon_name = "pan-end-symbolic"),
+        )
+
+    def construct_label(self, is_connected: bool, ap: WifiAccessPoint):
+        if not is_connected:
+            return "Disconnected"
+        return ap.ssid
+
+class QSButtonBluetooth(QSButton):
+    def __init__(self, control_module: "ControlModule"):
+        super().__init__(control_module, "bluetooth")
+        self.child = Widget.CenterBox(
+            start_widget = Widget.Icon(icon_name = "bluetooth-active-symbolic", pixel_size=20),
+            center_widget = bluetooth.bind(
+                "connected_devices",
+                lambda connected_devices:
+                Widget.Label(label = self.construct_label(connected_devices))
+            ),
+            end_widget = Widget.Icon(icon_name = "pan-end-symbolic"),
+        )
+    
+    def construct_label(self, connected_devices):
+        if len(connected_devices) == 0:
+            return "Disconnected"
+        elif len(connected_devices) == 1:
+            return connected_devices[0].alias
+        else:
+            return f"Paired {len(connected_devices)} Devices"
+
+class QSButtonVPN(QSButton):
+    def __init__(self, control_module: "ControlModule"):
+        super().__init__(control_module, "vpn")
+        self.child = Widget.CenterBox(
+            start_widget = Widget.Icon(icon_name = "security-high-symbolic", pixel_size=20),
+            center_widget =  network.vpn.bind(
+                "active_connections",
+                lambda active_connections:
+                Widget.Label(label = self.construct_label(active_connections))
+            ),
+            end_widget = Widget.Icon(icon_name = "pan-end-symbolic"),
+        )
+
+    def construct_label(self, active_connections):
+        if len(active_connections) == 0:
+            return "Disconnected"
+        elif len(active_connections) == 1:
+            return active_connections[0].name
+        else:
+            return f"{len(active_connections)} Connections"
+
+class QSMenu(Widget.Revealer):
     def __init__(self):
         super().__init__()
-        self.child = Widget.Label(label="Background\nNothing to show yet :(")
-        self.reveal_child = False
-    
-    def update_menu(self):
-        pass 
+        self.transition_type = "slide_right"
 
-class WifiNetworkButton(Widget.Button):
-    def __init__(self, access_point: WifiAccessPoint):
-        self.access_point = access_point
+    def open(self):
+        self.reveal_child = True
 
+class QSMenuNotify(QSMenu):
+    def __init__(self):
         super().__init__()
-        self.css_classes = network.wifi.devices[0].bind("ap", lambda ap: ["control-center-menu-button", "connected" if ap.bssid == access_point.bssid else None])
-        self.child = Widget.Box(child = [
-            Widget.Icon(icon_name=access_point.bind("icon_name")),
-            Widget.Label(label=access_point.bind("ssid")),
-            Widget.Label(label=access_point.bind("bandwidth", lambda bandwidth: f"({bandwidth})")),
-        ])
-        self.on_click = lambda _: self.toggle_connection()
+        self.child = Widget.Label(label="NOTIFY")
 
-    def toggle_connection(self):
-        if network.wifi.devices[0].ap.bssid == self.access_point.bssid:
-            asyncio.create_task(self.access_point.disconnect_from())
+class WifiItem(Widget.Button):
+    def __init__(self, ap: WifiAccessPoint):
+        super().__init__()
+        self.ap = ap
+        
+        self.css_classes = ["control-center-menu-item"] 
+        self.css_classes = network.wifi.devices[0].bind_many(
+            ["is_connected", "ap"],
+            lambda is_connected, xap: [
+                "control-center-menu-item",
+                "connected" if is_connected and xap.bssid == self.ap.bssid else None
+            ],
+        )
+        self.child = Widget.Box(
+            child = ap.bind(
+                "icon_name",
+                lambda icon_name: [
+                    Widget.Icon(icon_name = icon_name),
+                    Widget.Label(label = f"{ap.ssid} ({str(ap.bandwidth)} MHz)")
+                ],
+            ),
+        )
+
+    def on_click(self, _):
+        if network.wifi.devices[0].ap.bssid == self.ap.bssid:
+            asyncio.create_task(self.ap.disconnect_from())
         else:
-            asyncio.create_task(self.access_point.connect_to_graphical())
+            asyncio.create_task(self.ap.connect_to_graphical())
+
+class QSMenuWifi(QSMenu):
+    def __init__(self):
+        super().__init__()
+        self.child = Widget.Scroll(
+            css_classes = ["control-center-menu"],
+            child = Widget.Box(
+                vertical = True,
+                child = network.wifi.devices[0].bind("state", lambda state: [
+                    Widget.Label(label = "Wi-Fi", css_classes = ["control-center-menu-title"]),
+                    Widget.Label(label = f"State: {state}"),
+                    Widget.Box(
+                        vertical = True,
+                        child = network.wifi.devices[0].bind(
+                            "access_points",
+                            lambda access_points: [WifiItem(ap) if ap.ssid is not None else None for ap in access_points],
+                        ),
+                    ),
+                ]),
+            ),
+        )
+    def open(self):
+        super().open()
+        asyncio.create_task(network.wifi.devices[0].scan())
+
+class QSMenuBluetooth(QSMenu):
+    def __init__(self):
+        super().__init__()
+        self.child = Widget.Label(label="Bluetooth")
+
+class QSMenuVPN(QSMenu):
+    def __init__(self):
+        super().__init__()
+        self.child = Widget.Label(label="VPN")
+
+class ControlModule(Widget.Box):
+    def __init__(self):
+        super().__init__()
+
+        self.qs_button_notify = QSButtonNotify(self)
+        self.qs_button_wifi = QSButtonWifi(self)
+        self.qs_button_bluetooth = QSButtonBluetooth(self)
+        self.qs_button_vpn = QSButtonVPN(self)
+
+        self.qs_menu_notify = QSMenuNotify()
+        self.qs_menu_wifi = QSMenuWifi()
+        self.qs_menu_bluetooth = QSMenuBluetooth()
+        self.qs_menu_vpn = QSMenuVPN()
+
+        self.current_menu = None
+        self.open_menu("wifi")
+
+        self.css_classes = ["control-center-module"]
+        self.child = [
+            Widget.Box(
+                vertical = True,
+                child = [self.qs_button_notify, self.qs_button_wifi, self.qs_button_bluetooth, self.qs_button_vpn],
+            ),
+            self.qs_menu_notify,
+            self.qs_menu_wifi,
+            self.qs_menu_bluetooth,
+            self.qs_menu_vpn,
+        ]
+
+    def get_qs_button(self, menu: str):
+        if menu == "notify":
+            return self.qs_button_notify
+        if menu == "wifi":
+            return self.qs_button_wifi
+        if menu == "bluetooth":
+            return self.qs_button_bluetooth
+        if menu == "vpn":
+            return self.qs_button_vpn
+
+    def get_qs_menu(self, menu: str):
+        if menu == "notify":
+            return self.qs_menu_notify
+        if menu == "wifi":
+            return self.qs_menu_wifi
+        if menu == "bluetooth":
+            return self.qs_menu_bluetooth
+        if menu == "vpn":
+            return self.qs_menu_vpn
+
+    def open_menu(self, menu: str):
+        if self.current_menu == menu:
+            return
+
+        if self.current_menu is not None:
+            self.get_qs_menu(self.current_menu).reveal_child = False
+            self.get_qs_button(self.current_menu).remove_css_class("active") 
+            Utils.Timeout(self.get_qs_menu(self.current_menu).transition_duration, lambda: self.get_qs_menu(menu).open())
+        else:
+            self.get_qs_menu(menu).open()
+
+        self.get_qs_button(menu).add_css_class("active")
+        self.current_menu = menu
 
 class ControlCenterContent(Widget.Box):
     def __init__(self):
@@ -176,18 +279,10 @@ class ControlCenterContent(Widget.Box):
         self.vertical=True
         self.child = [
             StatusLine(),
-            Widget.Box(
-                child = [
-                    Widget.Box(
-                        vertical = True,
-                        child = [
-                            Wifi(),
-                            Bluetooth(),
-                        ],
-                    ),
-                    Widget.Separator(vertical=True,css_classes=["control-center-separator", "horizontal"]),
-                ],
-            ),
+            Widget.Box(child = [
+                #AudioModule(),
+                ControlModule(),
+            ])
         ]
 
 class ControlCenter(Widget.RevealerWindow):
@@ -208,3 +303,4 @@ class ControlCenter(Widget.RevealerWindow):
         self.kb_mode = "on_demand"
         self.popup = True
         self.child = Widget.Box(child=[revealer])
+

@@ -37,7 +37,7 @@ $gray: #928374;
 $gray-alt: #a89984;
 
 .statusbar {
-  font-family: JetBrainsMonoNL NFM;
+  font-family: Atkinson Sans; 
   font-size: 1.1rem;
   font-weight: bold;
   margin-top: 5px;
@@ -109,7 +109,7 @@ $gray-alt: #a89984;
 }
 
 .notification-popup-content {
-  font-family: Fira Sans;
+  font-family: Atkinson Sans;
   &.summary {
     font-size: 1.3rem;
     font-weight: bold;
@@ -124,63 +124,68 @@ $gray-alt: #a89984;
 }
 
 .control-center {
-  font-family: Fira Sans;
+  font-family: Atkinson Sans;
   font-size: 1.1rem;
   background-color: $bg;
   color: $fg;
   padding: 1rem;
   margin-top: 0.5rem;
   border-radius: 2rem;
-  min-width: 690px;
 }
 
 .control-center-statusline {
-  font-family: JetBrainsMonoNL NFM;
   font-size: 1.1rem;
   font-weight: bold;
-  padding: 0 0.5rem 0.5rem 0.5rem;
 }
 
-.control-center-quick-settings-button-title {
-  font-weight: bold; 
+.control-center-module {
+  margin: 0.5rem;
 }
 
-.control-center-quick-settings-button-subtitle {
-  font-size: 1rem;
+.control-center-audio-module {
+  min-width: 20em;
 }
 
-.control-center-quick-settings-button {
-  background-color: $bg1;
+.control-center-qs-button {
   padding: 0.5rem;
+  margin: 0.3rem;
+  font-size: 1.2rem;
+  background-color: $bg0;
+  border-radius: 2rem;
+  min-width: 15rem;
   &:hover {
-    background-color: $bg2;
+    background-color: $bg1;
   }
-  &.left {
-    border-radius: 2rem 0 0 2rem;
+  &.active {
+    background-color: $yellow;
+    color: $bg;
   }
-  &.right {
-    border-radius: 0 2rem 2rem 0;
+}
+
+.control-center-menu {
+  min-width: 20em;
+  padding: 0.3rem;
+}
+
+.control-center-menu-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.control-center-menu-item {
+  background-color: $bg0;
+  margin: 0.2rem;
+  padding: 0.2rem;
+  border-radius: 1rem;
+  &:hover {
+    background-color: $bg1;
   }
   &.connected {
     background-color: $yellow;
-    color: $bg0;
+    color: $bg;
     &:hover {
       background-color: $orange;
     }
-  }
-}
-
-.control-center-separator {
-  background-color: $fg4;
-  min-width: 2px;
-  $margin-width: 0.5rem;
-  &.horizontal {
-    margin-left: $margin-width;
-    margin-right: $margin-width;
-  }
-  &.vartical{
-    margin-left: $margin-width;
-    margin-right: $margin-width;
   }
 }
 
