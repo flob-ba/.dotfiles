@@ -100,11 +100,10 @@ $gray-alt: #a89984;
 }
 
 .notification-popup {
-  border: 2px solid $fg;
   border-radius: 1rem;
-  background-color: $bg;
+  background-color: $bg-dark;
   color: $fg;
-  margin: 0 0 0.5rem 0;
+  margin: 40px 0 10rem 0;
   padding: 0.5rem;
 }
 
@@ -140,6 +139,7 @@ $gray-alt: #a89984;
 
 .control-center-module {
   margin: 0.5rem;
+  min-width: 37em;
 }
 
 .control-center-audio-module {

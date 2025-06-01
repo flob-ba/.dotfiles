@@ -10,16 +10,16 @@ class NotificationPopup(Widget.CenterBox):
         self.notificationPopups = notificationPopups
         self.css_classes = ["notification-popup"]
         if notification.icon is not None:
-            self.start_widget = Widget.Icon(icon_name = notification.icon, pixel_size = 50)
+            self.start_widget = Widget.Icon(image = notification.icon, pixel_size = 50)
         self.center_widget = Widget.Box(
             vertical = True,
             child = [
                 Widget.Label(
-                    label = notification.summary[:50] + "..." if len(notification.summary) > 50 else notification.summary,
+                    label = notification.summary[:40] + "..." if len(notification.summary) > 40 else notification.summary,
                     css_classes = ["notification-popup-content", "summary"]
                 ) if len(notification.summary) > 0 else None,
                 Widget.Label(
-                    label = notification.body,
+                    label = notification.body[:40] + "..." if len(notification.body) > 40 else notification.body,
                     css_classes = ["notification-popup-content", "body"],
                 ) if len(notification.body) > 0 else None,
             ],

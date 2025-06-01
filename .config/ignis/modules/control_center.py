@@ -2,9 +2,9 @@ import asyncio
 import time
 from ignis.widgets import Widget
 from ignis.utils import Utils
-from ignis.services.bluetooth import BluetoothService
+from ignis.services.bluetooth import BluetoothService, BluetoothDevice
 from ignis.services.fetch import FetchService
-from ignis.services.network import NetworkService, WifiAccessPoint, WifiDevice
+from ignis.services.network import NetworkService, WifiAccessPoint, WifiDevice, VpnConnection
 from ignis.services.notifications import NotificationService
 from ignis.services.upower import UPowerService
 from datetime import datetime
@@ -112,7 +112,7 @@ class QSButtonBluetooth(QSButton):
         else:
             return f"Paired {len(connected_devices)} Devices"
 
-class QSButtonVPN(QSButton):
+class QSButtonVpn(QSButton):
     def __init__(self, control_module: "ControlModule"):
         super().__init__(control_module, "vpn")
         self.child = Widget.CenterBox(
@@ -199,15 +199,106 @@ class QSMenuWifi(QSMenu):
         super().open()
         asyncio.create_task(network.wifi.devices[0].scan())
 
+class BluetoothItem(Widget.Button):
+    def __init__(self, device: BluetoothDevice):
+        super().__init__()
+        self.device = device
+        
+        self.css_classes = ["control-center-menu-item"] 
+        self.css_classes = device.bind(
+            "connected",
+            lambda is_connected: [
+                "control-center-menu-item",
+                "connected" if is_connected else None
+            ],
+        )
+        self.child = Widget.Box(
+            child = device.bind(
+                "icon_name",
+                lambda icon_name: [
+                    Widget.Icon(icon_name = icon_name),
+                    Widget.Label(label = f"{device.alias}")
+                ],
+            ),
+        )
+
+    def on_click(self, _):
+        if self.device.connected:
+            asyncio.create_task(self.device.disconnect_from())
+        else:
+            asyncio.create_task(self.device.connect_to())
+
 class QSMenuBluetooth(QSMenu):
     def __init__(self):
         super().__init__()
-        self.child = Widget.Label(label="Bluetooth")
+        self.child = Widget.Scroll(
+            css_classes = ["control-center-menu"],
+            child = Widget.Box(
+                vertical = True,
+                child = bluetooth.bind("state", lambda state: [
+                    Widget.Label(label = "Bluetooth", css_classes = ["control-center-menu-title"]),
+                    Widget.Label(label = f"State: {state}"),
+                    Widget.Box(
+                        vertical = True,
+                        child = bluetooth.bind(
+                            "devices",
+                            lambda devices: [BluetoothItem(device) for device in devices],
+                        ),
+                    ),
+                ]),
+            ),
+        )
 
-class QSMenuVPN(QSMenu):
+    def open(self):
+        super().open()
+        bluetooth.setup_mode = True
+
+class VpnItem(Widget.Button):
+    def __init__(self, connection: VpnConnection):
+        super().__init__()
+        self.connection = connection
+        
+        self.css_classes = ["control-center-menu-item"] 
+        self.css_classes = connection.bind(
+            "is_connected",
+            lambda is_connected: [
+                "control-center-menu-item",
+                "connected" if is_connected else None
+            ],
+        )
+        self.child = Widget.Box(
+            child = [ 
+                Widget.Icon(icon_name = "network-vpn-symbolic"),
+                Widget.Label(label = f"{connection.name}")
+            ],
+        )
+
+    def on_click(self, _):
+        asyncio.create_task(self.connection.toggle_connection())
+
+class QSMenuVpn(QSMenu):
     def __init__(self):
         super().__init__()
-        self.child = Widget.Label(label="VPN")
+        self.child = Widget.Scroll(
+            css_classes = ["control-center-menu"],
+            child = Widget.Box(
+                vertical = True,
+                child = [ 
+                    Widget.Label(label = "VPN", css_classes = ["control-center-menu-title"]),
+                    Widget.Box(
+                        vertical = True,
+                        child = network.vpn.bind(
+                            "connections",
+                            lambda connections: [VpnItem(connection) for connection in connections],
+                        ),
+                    ),
+                ],
+            ),
+        )
+
+    def open(self):
+        super().open()
+        bluetooth.setup_mode = True
 
 class ControlModule(Widget.Box):
     def __init__(self):
@@ -216,12 +307,12 @@ class ControlModule(Widget.Box):
         self.qs_button_notify = QSButtonNotify(self)
         self.qs_button_wifi = QSButtonWifi(self)
         self.qs_button_bluetooth = QSButtonBluetooth(self)
-        self.qs_button_vpn = QSButtonVPN(self)
+        self.qs_button_vpn = QSButtonVpn(self)
 
         self.qs_menu_notify = QSMenuNotify()
         self.qs_menu_wifi = QSMenuWifi()
         self.qs_menu_bluetooth = QSMenuBluetooth()
-        self.qs_menu_vpn = QSMenuVPN()
+        self.qs_menu_vpn = QSMenuVpn()
 
         self.current_menu = None
         self.open_menu("wifi")
