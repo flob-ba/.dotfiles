@@ -139,7 +139,7 @@ $gray-alt: #a89984;
 
 .control-center-module {
   margin: 0.5rem;
-  min-width: 47em;
+  min-width: 41rem;
 }
 
 .control-center-audio-module {
@@ -159,11 +159,14 @@ $gray-alt: #a89984;
   &.active {
     background-color: $yellow;
     color: $bg;
+    &:hover {
+      background-color: $orange;
+    }
   }
 }
 
 .control-center-menu {
-  min-width: 30em;
+  min-width: 20em;
   padding: 0.3rem;
 }
 
@@ -205,5 +208,15 @@ $gray-alt: #a89984;
   &:hover {
     background-color: $orange;
   }
+}
+
+.control-center-profile-picture {
+  margin: 1rem;
+  border-radius: 1rem;
+}
+
+.control-center-welcome-user {
+  font-weight: bold;
+  font-size: 1.5rem;
 }
 

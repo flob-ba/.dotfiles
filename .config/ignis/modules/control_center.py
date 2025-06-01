@@ -49,7 +49,10 @@ class QSButton(Widget.Button):
         self.css_classes = ["control-center-qs-button"]
 
     def on_click(self, _):
-        self.control_module.open_menu(self.menu)
+        if self.control_module.current_menu == self.menu:
+            self.control_module.open_menu("welcome")
+        else:
+            self.control_module.open_menu(self.menu)
 
 class QSButtonNotify(QSButton):
     def __init__(self, control_module: "ControlModule"):
@@ -161,32 +164,16 @@ class NotificationItem(Widget.Box):
                         Widget.Label(
                             css_classes = ["notification-popup-content", "summary"],
                             style = "font-size: 1.1rem;",
-                            label = notification.summary[:30] + "..." if len(notification.summary) > 30 else notification.summary,
+                            label = notification.summary[:17] + "..." if len(notification.summary) > 20 else notification.summary,
                         ),
                         Widget.Label(
                             css_classes = ["notification-popup-content", "body"],
-                            label = notification.body[:30] + "..." if len(notification.body) > 30 else notification.body,
+                            label = notification.body[:17] + "..." if len(notification.body) > 20 else notification.body,
                         ) if len(notification.body) > 0 else None,
                     ],
                 ),
             ),
         ]
-
-    def split_message(self, msg: str):
-        SPLIT_POS = 40
-        splitted = msg[0]
-        for i in range(1,len(msg)):
-            if i % SPLIT_POS != 0:
-                splitted = splitted + msg[i]
-            else:
-                for j in range(i,len(msg)):
-                    if msg[j].isspace():
-                        splitted = splitted + '\n'
-                        break
-                    else:
-                        splitted = splitted + msg[j]
-                        i = i + 1
-        return splitted
 
 class QSMenuNotify(QSMenu):
     def __init__(self):
@@ -376,6 +363,26 @@ class QSMenuVpn(QSMenu):
         super().open()
         bluetooth.setup_mode = True
 
+class QSMenuWelcome(QSMenu):
+    def __init__(self):
+        super().__init__()
+        username = Utils.exec_sh("whoami").stdout
+        username = username[:len(username)-1]
+        self.child = Widget.CenterBox(
+            css_classes = ["control-center-menu"],
+            center_widget = Widget.Box(vertical = True, child = [
+                Widget.Icon(
+                    image = ".dotfiles/assets/profile.png",
+                    pixel_size = 150,
+                    css_classes = ["control-center-profile-picture"],
+                ),
+                Widget.Label(
+                    label = f"Hello {username}!",
+                    css_classes = ["control-center-welcome-user"],
+                ),
+            ]),
+        )
+
 class ControlModule(Widget.Box):
     def __init__(self):
         super().__init__()
@@ -385,13 +392,14 @@ class ControlModule(Widget.Box):
         self.qs_button_bluetooth = QSButtonBluetooth(self)
         self.qs_button_vpn = QSButtonVpn(self)
 
+        self.qs_menu_welcome = QSMenuWelcome()
         self.qs_menu_notify = QSMenuNotify()
         self.qs_menu_wifi = QSMenuWifi()
         self.qs_menu_bluetooth = QSMenuBluetooth()
         self.qs_menu_vpn = QSMenuVpn()
 
         self.current_menu = None
-        self.open_menu("wifi")
+        self.open_menu("welcome")
 
         self.css_classes = ["control-center-module"]
         self.child = [
@@ -399,6 +407,7 @@ class ControlModule(Widget.Box):
                 vertical = True,
                 child = [self.qs_button_notify, self.qs_button_wifi, self.qs_button_bluetooth, self.qs_button_vpn],
             ),
+            self.qs_menu_welcome,
             self.qs_menu_notify,
             self.qs_menu_wifi,
             self.qs_menu_bluetooth,
@@ -416,6 +425,8 @@ class ControlModule(Widget.Box):
             return self.qs_button_vpn
 
     def get_qs_menu(self, menu: str):
+        if menu == "welcome":
+            return self.qs_menu_welcome
         if menu == "notify":
             return self.qs_menu_notify
         if menu == "wifi":
@@ -427,28 +438,33 @@ class ControlModule(Widget.Box):
 
     def open_menu(self, menu: str):
         if self.current_menu == menu:
-            return
+           return
 
         if self.current_menu is not None:
             self.get_qs_menu(self.current_menu).reveal_child = False
-            self.get_qs_button(self.current_menu).remove_css_class("active") 
+            if self.current_menu != "welcome":
+                self.get_qs_button(self.current_menu).remove_css_class("active") 
             Utils.Timeout(self.get_qs_menu(self.current_menu).transition_duration, lambda: self.get_qs_menu(menu).open())
         else:
             self.get_qs_menu(menu).open()
 
-        self.get_qs_button(menu).add_css_class("active")
+        if menu != "welcome":
+            self.get_qs_button(menu).add_css_class("active")
         self.current_menu = menu
 
 class ControlCenterContent(Widget.Box):
     def __init__(self):
         super().__init__()
+
+        self.control_module = ControlModule()
+
         self.css_classes = ["control-center"]
         self.vertical=True
         self.child = [
             StatusLine(),
             Widget.Box(child = [
                 #AudioModule(),
-                ControlModule(),
+                self.control_module,
             ])
         ]
 
@@ -470,4 +486,10 @@ class ControlCenter(Widget.RevealerWindow):
         self.kb_mode = "on_demand"
         self.popup = True
         self.child = Widget.Box(child=[revealer])
+       
+        self.connect("notify::visible", lambda x,_: self.on_reveal())
+
+    def on_reveal(self):
+        if self.visible == False:
+            self.child.child[0].child.control_module.open_menu("welcome")
 
