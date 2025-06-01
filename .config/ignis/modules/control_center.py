@@ -5,7 +5,7 @@ from ignis.utils import Utils
 from ignis.services.bluetooth import BluetoothService, BluetoothDevice
 from ignis.services.fetch import FetchService
 from ignis.services.network import NetworkService, WifiAccessPoint, WifiDevice, VpnConnection
-from ignis.services.notifications import NotificationService
+from ignis.services.notifications import NotificationService, Notification
 from ignis.services.upower import UPowerService
 from datetime import datetime
 
@@ -141,10 +141,85 @@ class QSMenu(Widget.Revealer):
     def open(self):
         self.reveal_child = True
 
+class NotificationItem(Widget.Box):
+    def __init__(self, notification: Notification):
+        super().__init__()
+        self.child = [
+            Widget.Button(
+                css_classes = ["control-center-notification-close"],
+                child = Widget.Icon(icon_name = "window-close-symbolic", pixel_size = 30),
+                on_click = lambda _: notification.close(),
+            ),
+            Widget.CenterBox(
+                css_classes = ["control-center-notification"],
+                hexpand = True,
+                start_widget = Widget.Icon(image = notification.icon, pixel_size = 30) if notification.icon is not None else None,
+                center_widget = Widget.Box(
+                    vertical = True,
+                    hexpand = True,
+                    child = [
+                        Widget.Label(
+                            css_classes = ["notification-popup-content", "summary"],
+                            style = "font-size: 1.1rem;",
+                            label = notification.summary[:30] + "..." if len(notification.summary) > 30 else notification.summary,
+                        ),
+                        Widget.Label(
+                            css_classes = ["notification-popup-content", "body"],
+                            label = notification.body[:30] + "..." if len(notification.body) > 30 else notification.body,
+                        ) if len(notification.body) > 0 else None,
+                    ],
+                ),
+            ),
+        ]
+
+    def split_message(self, msg: str):
+        SPLIT_POS = 40
+        splitted = msg[0]
+        for i in range(1,len(msg)):
+            if i % SPLIT_POS != 0:
+                splitted = splitted + msg[i]
+            else:
+                for j in range(i,len(msg)):
+                    if msg[j].isspace():
+                        splitted = splitted + '\n'
+                        break
+                    else:
+                        splitted = splitted + msg[j]
+                        i = i + 1
+        return splitted
+
 class QSMenuNotify(QSMenu):
     def __init__(self):
         super().__init__()
-        self.child = Widget.Label(label="NOTIFY")
+        self.child = Widget.Scroll(
+            css_classes = ["control-center-menu"],
+            child = Widget.Box(
+                vertical = True,
+                child = [
+                    Widget.CenterBox(
+                        end_widget = Widget.Button(
+                            css_classes = ["control-center-notification-close"],
+                            child = Widget.Box(child = [
+                                Widget.Icon(icon_name = "window-close-symbolic", pixel_size = 30),
+                                Widget.Label(label = "Clear"),
+                            ]),
+                            on_click = lambda _: notify.clear_all(),
+                        ),
+                        center_widget = Widget.Label(
+                            label = "Notifications",
+                            css_classes = ["control-center-menu-title"]
+                        ), 
+                    ),
+                    Widget.Box(
+                        vertical = True,
+                        child = notify.bind(
+                            "notifications", 
+                            lambda notifications: [NotificationItem(notification) for notification in notifications],
+                        ),
+                    ),
+                ],
+            ),
+        )
 
 class WifiItem(Widget.Button):
     def __init__(self, ap: WifiAccessPoint):
@@ -195,6 +270,7 @@ class QSMenuWifi(QSMenu):
                 ]),
             ),
         )
+
     def open(self):
         super().open()
         asyncio.create_task(network.wifi.devices[0].scan())

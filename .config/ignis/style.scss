@@ -139,7 +139,7 @@ $gray-alt: #a89984;
 
 .control-center-module {
   margin: 0.5rem;
-  min-width: 37em;
+  min-width: 47em;
 }
 
 .control-center-audio-module {
@@ -163,7 +163,7 @@ $gray-alt: #a89984;
 }
 
 .control-center-menu {
-  min-width: 20em;
+  min-width: 30em;
   padding: 0.3rem;
 }
 
@@ -186,6 +186,24 @@ $gray-alt: #a89984;
     &:hover {
       background-color: $orange;
     }
+  }
+}
+
+.control-center-notification {
+  background-color: $bg0;
+  margin: 0.2rem;
+  padding: 1rem 2rem 1rem 1rem;
+  border-radius: 1rem;
+}
+
+.control-center-notification-close {
+  background-color: $red;
+  color: $bg0;
+  margin: 1rem 0.5rem;
+  padding: 0 0.5rem;
+  border-radius: 0.25rem;
+  &:hover {
+    background-color: $orange;
   }
 }
 
