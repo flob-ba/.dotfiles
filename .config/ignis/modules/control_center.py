@@ -144,36 +144,31 @@ class QSMenu(Widget.Revealer):
     def open(self):
         self.reveal_child = True
 
-class NotificationItem(Widget.Box):
+class NotificationItem(Widget.Button):
     def __init__(self, notification: Notification):
         super().__init__()
-        self.child = [
-            Widget.Button(
-                css_classes = ["control-center-notification-close"],
-                child = Widget.Icon(icon_name = "window-close-symbolic", pixel_size = 30),
-                on_click = lambda _: notification.close(),
-            ),
-            Widget.CenterBox(
-                css_classes = ["control-center-notification"],
+        self.child = Widget.CenterBox(
+            css_classes = ["control-center-notification"],
+            hexpand = True,
+            start_widget = Widget.Icon(image = notification.icon, pixel_size = 30) if notification.icon is not None else None,
+            center_widget = Widget.Box(
+                vertical = True,
                 hexpand = True,
-                start_widget = Widget.Icon(image = notification.icon, pixel_size = 30) if notification.icon is not None else None,
-                center_widget = Widget.Box(
-                    vertical = True,
-                    hexpand = True,
-                    child = [
-                        Widget.Label(
-                            css_classes = ["notification-popup-content", "summary"],
-                            style = "font-size: 1.1rem;",
-                            label = notification.summary[:17] + "..." if len(notification.summary) > 20 else notification.summary,
-                        ),
-                        Widget.Label(
-                            css_classes = ["notification-popup-content", "body"],
-                            label = notification.body[:17] + "..." if len(notification.body) > 20 else notification.body,
-                        ) if len(notification.body) > 0 else None,
-                    ],
-                ),
+                child = [
+                    Widget.Label(
+                        css_classes = ["notification-popup-content", "summary"],
+                        style = "font-size: 1.1rem;",
+                        label = notification.summary[:17] + "..." if len(notification.summary) > 20 else notification.summary,
+                    ),
+                    Widget.Label(
+                        css_classes = ["notification-popup-content", "body"],
+                        label = notification.body[:17] + "..." if len(notification.body) > 20 else notification.body,
+                    ) if len(notification.body) > 0 else None,
+                ],
             ),
-        ]
+        )
+        self.on_click = lambda _: notification.close()
+        
 
 class QSMenuNotify(QSMenu):
     def __init__(self):
@@ -214,11 +209,11 @@ class WifiItem(Widget.Button):
         self.ap = ap
         
         self.css_classes = ["control-center-menu-item"] 
-        self.css_classes = network.wifi.devices[0].bind_many(
-            ["is_connected", "ap"],
-            lambda is_connected, xap: [
+        self.css_classes = network.wifi.devices[0].bind(
+            "ap",
+            lambda access_point: [
                 "control-center-menu-item",
-                "connected" if is_connected and xap.bssid == self.ap.bssid else None
+                "connected" if access_point.bssid == self.ap.bssid else None
             ],
         )
         self.child = Widget.Box(
@@ -238,23 +233,28 @@ class WifiItem(Widget.Button):
             asyncio.create_task(self.ap.connect_to_graphical())
 
 class QSMenuWifi(QSMenu):
+    class State(Widget.Label):
+        def __init__(self):
+            super().__init__()
+            self.label = network.wifi.devices[0].bind("state", lambda state: f"State: {state}")
+
+    class AccessPoints(Widget.Box):
+        def __init__(self):
+            super().__init__()
+            self.vertical = True
+            self.child = network.wifi.devices[0].bind("access_points", lambda access_points: [WifiItem(ap) if ap.ssid is not None else None for ap in access_points])
+
     def __init__(self):
         super().__init__()
         self.child = Widget.Scroll(
             css_classes = ["control-center-menu"],
             child = Widget.Box(
                 vertical = True,
-                child = network.wifi.devices[0].bind("state", lambda state: [
+                child = [
                     Widget.Label(label = "Wi-Fi", css_classes = ["control-center-menu-title"]),
-                    Widget.Label(label = f"State: {state}"),
-                    Widget.Box(
-                        vertical = True,
-                        child = network.wifi.devices[0].bind(
-                            "access_points",
-                            lambda access_points: [WifiItem(ap) if ap.ssid is not None else None for ap in access_points],
-                        ),
-                    ),
-                ]),
+                    QSMenuWifi.State(), 
+                    QSMenuWifi.AccessPoints(),
+                ],
             ),
         )
 
