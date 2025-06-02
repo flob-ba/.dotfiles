@@ -96,14 +96,14 @@ $gray-alt: #a89984;
 }
 
 .notification-popup-list {
-  margin: 10px;
+  margin: 50px 10px 0 0;
 }
 
 .notification-popup {
   border-radius: 1rem;
   background-color: $bg-dark;
   color: $fg;
-  margin: 40px 0 10rem 0;
+  margin-bottom: 0.5rem; 
   padding: 0.5rem;
 }
 

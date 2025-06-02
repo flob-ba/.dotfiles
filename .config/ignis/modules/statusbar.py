@@ -106,38 +106,49 @@ class StatusModule(Widget.Box):
             Battery(), 
         ]) 
 
-class StatusBarLeft(Widget.Window):
-    def __init__(self, monitor_id: int):
-        super().__init__(f"statusbar_left_{monitor_id}")
-        self.anchor = ["left", "top"]
-        self.exclusivity = "exclusive"
-        self.monitor = monitor_id
-        self.layer = "top"
-        self.child = Widget.Box(
-            css_classes = ["statusbar"],
-            child = [
-                WorkspaceModule(),
-            ],
-        )
-        for module in self.child.child:
+class StatusBarStart(Widget.Box):
+    def __init__(self):
+        super().__init__()
+        self.child = [
+            WorkspaceModule(),
+        ]
+        for module in self.child:
             module.add_css_class("statusbar-module")
             module.add_css_class("left")
 
-class StatusBarRight(Widget.Window):
-    def __init__(self, monitor_id: int):
-        super().__init__(f"statusbar_right_{monitor_id}")
-        self.anchor = ["right", "top"]
-        self.exclusivity = "exclusive"
-        self.monitor = monitor_id
-        self.layer = "top"
-        self.child = Widget.Box(
-            css_classes = ["statusbar"],
-            child = [
+class StatusBarCenter(Widget.Box):
+    def __init__(self):
+        super().__init__()
+        self.child = [
+            
+        ]
+        for module in self.child:
+            module.add_css_class("statusbar-module")
+            module.add_css_class("center")
+
+class StatusBarEnd(Widget.Box):
+    def __init__(self):
+        super().__init__()
+        self.child = [
                 SystemTrayModule(),
                 StatusModule(),
                 ClockModule(),
-            ],
-        )
-        for module in self.child.child:
+        ]
+        for module in self.child:
             module.add_css_class("statusbar-module")
             module.add_css_class("right")
+
+class StatusBar(Widget.Window):
+    def __init__(self, monitor_id: int):
+        super().__init__(f"statusbar_{monitor_id}")
+        self.anchor = ["left", "top", "right"]
+        self.exclusivity = "exclusive"
+        self.monitor = monitor_id
+        self.layer = "top"
+        self.child = Widget.CenterBox(
+            css_classes = ["statusbar"],
+            start_widget = StatusBarStart(), 
+            center_widget = StatusBarCenter(), 
+            end_widget = StatusBarEnd(), 
+        )
+
