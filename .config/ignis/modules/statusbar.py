@@ -2,6 +2,7 @@ from ignis.widgets import Widget
 from ignis.services.audio import AudioService
 from ignis.services.bluetooth import BluetoothService
 from ignis.services.hyprland import HyprlandService
+from ignis.services.mpris import MprisService, MprisPlayer
 from ignis.services.network import NetworkService
 from ignis.services.system_tray import SystemTrayService, SystemTrayItem
 from ignis.services.upower import UPowerService
@@ -12,6 +13,7 @@ from datetime import datetime
 audio = AudioService.get_default()
 bluetooth = BluetoothService.get_default()
 hypr = HyprlandService.get_default()
+mpris = MprisService.get_default()
 network = NetworkService.get_default()
 systray = SystemTrayService.get_default()
 upower = UPowerService.get_default()
@@ -56,7 +58,7 @@ class SystemTrayItem(Widget.Button):
 class SystemTrayModule(Widget.Box):
     def __init__(self):
         super().__init__()
-        self.child = systray.bind("items", lambda items : [SystemTrayItem(item) if item.title != "blueman" else None for item in items])
+        self.child = systray.bind("items", lambda items : [SystemTrayItem(item) if item.id != "blueman" and item.id != "chrome_status_icon_1" else None for item in items])
 
 class Audio(Widget.Box):
     def __init__(self):
@@ -104,7 +106,24 @@ class StatusModule(Widget.Box):
             Bluetooth() if powered else None,
             Network(),
             Battery(), 
-        ]) 
+        ])
+
+class MediaBar(Widget.Box):
+    def __init__(self, player: MprisPlayer):
+        super().__init__()
+        self.child = [
+            Widget.Icon(image = ".dotfiles/assets/yt-music.png", pixel_size = 20, css_classes = ["statusbar-media-icon"]),
+            Widget.Label(label = player.bind("title"))
+        ]
+
+class MediaModule(Widget.Box):
+    def __init__(self):
+        super().__init__()
+        self.child = mpris.bind(
+            "players",
+            lambda players:
+            [MediaBar(players[0])] if len(players) > 0 else [Widget.Icon(icon_name = "multimedia-player-symbolic", pixel_size = 20), Widget.Label(label = "no catjams")]
+        )
 
 class StatusBarStart(Widget.Box):
     def __init__(self):
@@ -120,7 +139,7 @@ class StatusBarCenter(Widget.Box):
     def __init__(self):
         super().__init__()
         self.child = [
-            
+            MediaModule(), 
         ]
         for module in self.child:
             module.add_css_class("statusbar-module")
