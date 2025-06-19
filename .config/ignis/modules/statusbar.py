@@ -122,7 +122,7 @@ class MediaModule(Widget.Box):
         self.child = mpris.bind(
             "players",
             lambda players:
-            [MediaBar(players[0])] if len(players) > 0 else [Widget.Icon(icon_name = "multimedia-player-symbolic", pixel_size = 20), Widget.Label(label = "no catjams")]
+            [MediaBar(players[0])] if len(players) > 0 else [Widget.Icon(icon_name = "multimedia-player-symbolic", pixel_size = 20), Widget.Label(label = "no jams")]
         )
 
 class StatusBarStart(Widget.Box):

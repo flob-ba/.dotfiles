@@ -19,13 +19,13 @@ vim.opt.rtp:prepend(lazypath)
 require("lazy").setup("config.plugins")
 --require("pywal").setup()
 local lualine_theme = require("lualine.themes.gruvbox")
-lualine_theme.normal.c.bg = "#1d2021"
+lualine_theme.normal.c.bg = "#000000"
 lualine_theme.normal.c.fg = "#ebdbb2"
-lualine_theme.insert.c.bg = "#1d2021"
+lualine_theme.insert.c.bg = "#000000"
 lualine_theme.insert.c.fg = "#ebdbb2"
-lualine_theme.visual.c.bg = "#1d2021"
+lualine_theme.visual.c.bg = "#000000"
 lualine_theme.visual.c.fg = "#ebdbb2"
-lualine_theme.command.c.bg = "#1d2021"
+lualine_theme.command.c.bg = "#000000"
 lualine_theme.command.c.fg = "#ebdbb2"
 require("lualine").setup({
     options = {
@@ -59,8 +59,8 @@ require("gruvbox").setup({
   transparent_mode = false,
 })
 vim.cmd("colorscheme gruvbox")
-vim.cmd("hi Normal guibg=#1d2021 guifg=#e6d0d0")
-vim.cmd("hi SignColumn guibg=#1d2021 guifg=#e6d0d0")
+vim.cmd("hi Normal guibg=#000000 guifg=#e6d0d0")
+vim.cmd("hi SignColumn guibg=#000000 guifg=#e6d0d0")
 
 require("gitsigns").setup()
 

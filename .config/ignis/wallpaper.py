@@ -34,8 +34,6 @@ def set_wallpaper(wallpaper: str):
 
 if __name__ == "__main__":
     current_wallpaper = get_current_wallpaper()
-    set_wallpaper(current_wallpaper)
-    print("HELLO")
     while True:
         next_wallpaper = get_current_wallpaper() 
         if next_wallpaper != current_wallpaper:
