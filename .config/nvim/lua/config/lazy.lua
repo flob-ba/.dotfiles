@@ -91,6 +91,9 @@ lsp_config.cmake.setup({
     filetypes = { "cmake", "CMakeLists.txt" }
 })
 lsp_config.pylsp.setup({})
+lsp_config.qmlls.setup({
+    cmd = {"qmlls6", "-E"},
+})
 vim.keymap.set("n", "<leader>ow", vim.diagnostic.open_float)
 
 local telescope = require("telescope")
